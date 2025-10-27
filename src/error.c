@@ -6,13 +6,13 @@
 /*   By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/11 18:16:51 by wilisson          #+#    #+#             */
-/*   Updated: 2025/10/12 16:34:56 by wilisson         ###   ########.fr       */
+/*   Updated: 2025/10/26 19:24:05 by wilisson         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void error_msg()
+void error_exit()
 {
     ft_putstr_fd("", 2);
 }

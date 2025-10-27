@@ -6,7 +6,7 @@
 /*   By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/11 16:29:26 by wilisson          #+#    #+#             */
-/*   Updated: 2025/10/25 18:48:36 by wilisson         ###   ########.fr       */
+/*   Updated: 2025/10/27 18:59:09 by wilisson         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,18 @@
 # include <sys/wait.h>
 # include <../libft/libft.h>
 
-typedef struct s_pipex{
-int fdout;
-int  fdin;
-int    ac;
-char **av;
-char **envp;
+typedef struct s_pipex {
+int         fd_out;
+int         fd_in;
+int         pipe_fd[2];
+pid_t       pid1;
+pid_t       pid2;
+char        **envp;
+char        *cmd1;
+char        *cmd2;
+int         status
 }     t_pipex;
 
-void open_files(char *infile, char *outfile, int *fd_in, int *fd_out);
+int open_files(t_pipex *pipex, char *infile, char *outfile);
 
 #endif
