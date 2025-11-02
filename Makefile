@@ -6,41 +6,44 @@
 #    By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/11 16:28:57 by wilisson          #+#    #+#              #
-#    Updated: 2025/10/25 17:49:03 by wilisson         ###   ########.fr        #
+#    Updated: 2025/11/02 13:47:33 by wilisson         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
+INCLUDES = -I. -Ilibft
 
-NAME = 
+NAME = pipex
 
-SRCS = 
-
-B_SRCS = 	
+SRCS = 	pipex.c \
+		src/utils.c \
+		src/path.c \
+		src/error.c
 		
 OBJS = $(SRCS:.c=.o)
 
-B_OBJS = $(B_SRCS:.c=.o)
+LIBFT = libft/libft.a
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	ar rcs $(NAME) $(OBJS)
+$(NAME): $(LIBFT) $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $(NAME)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+$(LIBFT):
+	$(MAKE) -C libft
 
 clean:
-	rm -f $(OBJS) $(B_OBJS)
+	rm -f $(OBJS)
+	$(MAKE) -C libft clean
 
 fclean: clean
 	rm -f $(NAME)
+	$(MAKE) -C libft fclean
 
 re: fclean all
 
-bonus: $(OBJS) $(B_OBJS)
-	ar rcs $(NAME) $^
-
-
-.PHONY:			all clean fclean re bonus
+.PHONY: all clean fclean re

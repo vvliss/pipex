@@ -6,7 +6,7 @@
 /*   By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/27 18:59:52 by wilisson          #+#    #+#             */
-/*   Updated: 2025/11/01 17:53:56 by wilisson         ###   ########.fr       */
+/*   Updated: 2025/11/02 21:29:50 by wilisson         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,13 +70,13 @@ static int is_absolute_path(char *cmd)
 
 char *get_cmd_path(char *cmd, char **envp)
 {
-    if(is_absolute_path(cmd)) //if the path is absoulte
+    if(is_absolute_path(cmd))
     {
-        if(access(cmd, X_OK) == 0) //if the access can access the file and it's executable
-            return(ft_strdup(cmd)); //the copy of our path
+        if(access(cmd, X_OK) == 0)
+            return(ft_strdup(cmd));
         return(NULL);
     }
-    else if (ft_strchr(cmd, '/')) //check for relative paths
+    else if (ft_strchr(cmd, '/'))
     {
         if(access(cmd, X_OK) == 0)
             return(ft_strdup(cmd));
@@ -86,22 +86,22 @@ char *get_cmd_path(char *cmd, char **envp)
         return(find_path(cmd, envp));
 }
 
-void execute_cmd(t_pipex *pipex, char *cmd, char **envp)
+void execute_cmd(char *cmd, char **envp)
 {
     char *path;
     char **args;
     
     args = split_cmd(cmd);
     if(!args)
-        error_exit("Split failed", 1);
+        exit(1);
     path = get_cmd_path(args[0], envp);
     if(!path)
     {
         free_arr(args);
-        error_exit("Command not found", 127);
+        exit(127);
     }
     execve(path, args, envp);
     free(path);
     free_arr(args);
-    perror_exit("execve failed");
+    exit(1);
 }
