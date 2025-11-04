@@ -6,7 +6,7 @@
 /*   By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/11 16:12:10 by wilisson          #+#    #+#             */
-/*   Updated: 2025/11/02 21:31:51 by wilisson         ###   ########.fr       */
+/*   Updated: 2025/11/04 19:28:38 by wilisson         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,11 @@
 static void	first_child(t_pipex *pipex)
 {
 	close(pipex->pipe_fd[0]);
+	if (pipex->fd_in == -1)
+	{
+		close(pipex->pipe_fd[1]);
+		exit(1);
+	}
 	if (dup2(pipex->fd_in, STDIN_FILENO) == -1)
 	{
 		close(pipex->fd_in);
@@ -38,16 +43,20 @@ static void	second_child(t_pipex *pipex)
 	if (dup2(pipex->pipe_fd[0], STDIN_FILENO) == -1)
 	{
 		close(pipex->pipe_fd[0]);
-		close(pipex->fd_out);
+		if (pipex->fd_out != -1)
+			close(pipex->fd_out);
 		exit(1);
 	}
 	close(pipex->pipe_fd[0]);
-	if (dup2(pipex->fd_out, STDOUT_FILENO) == -1)
+	if (pipex->fd_out != -1)
 	{
+		if (dup2(pipex->fd_out, STDOUT_FILENO) == -1)
+		{
+			close(pipex->fd_out);
+			exit(1);
+		}
 		close(pipex->fd_out);
-		exit(1);
 	}
-	close(pipex->fd_out);
 	execute_cmd(pipex->cmd2, pipex->envp);
 	exit(1);
 }
@@ -66,62 +75,48 @@ static int	init_pipex(t_pipex *pipex, int ac, char **av, char **envp)
 	return (1);
 }
 
-static int	setup_files_and_pipe(t_pipex *pipex, char *infile, char *outfile)
-{
-	if (open_files(pipex, infile, outfile) == -1)
-		return (0);
-	if (pipe(pipex->pipe_fd) == -1)
-	{
-		close_fds(pipex->fd_in, pipex->fd_out, -1, -1);
-		return (0);
-	}
-	return (1);
-}
-
 static void	cleanup_pipex(t_pipex *pipex)
 {
-	close_fds(pipex->fd_in, pipex->fd_out, pipex->pipe_fd[0], pipex->pipe_fd[1]);
-}
-
-static int	validate_commands(t_pipex *pipex)
-{
-	if (!pipex->cmd1 || !*pipex->cmd1)
-	{
-		ft_putstr_fd("pipex: command not found: \n", 2);
-		return (0);
-	}
-	if (!pipex->cmd2 || !*pipex->cmd2)
-	{
-		ft_putstr_fd("pipex: command not found: \n", 2);
-		return (0);
-	}
-	return (1);
+	close_fds(pipex->fd_in, pipex->fd_out, pipex->pipe_fd[0],
+		pipex->pipe_fd[1]);
 }
 
 int	main(int ac, char **av, char **envp)
 {
 	t_pipex	pipex;
-	int		exit_code;
 
-	if (!init_pipex(&pipex, ac, av, envp) || !setup_files_and_pipe(&pipex, av[1], av[4]))
+	if (!init_pipex(&pipex, ac, av, envp) || !setup_files_and_pipe(&pipex,
+			av[1], av[4]))
 		return (1);
 	if (!validate_commands(&pipex))
-		return(127);
+		return (127);
 	pipex.pid1 = fork();
-	if (pipex.pid1 == -1)
-		return (cleanup_pipex(&pipex), 1);
 	if (pipex.pid1 == 0)
 		first_child(&pipex);
 	pipex.pid2 = fork();
-	if (pipex.pid2 == -1)
-		return (cleanup_pipex(&pipex), 1);
 	if (pipex.pid2 == 0)
 		second_child(&pipex);
-	close(pipex.pipe_fd[0]);
-	close(pipex.pipe_fd[1]);
+	close_fds(pipex.pipe_fd[0], pipex.pipe_fd[1], -1, -1);
 	waitpid(pipex.pid1, NULL, 0);
 	waitpid(pipex.pid2, &pipex.status, 0);
-	exit_code = WEXITSTATUS(pipex.status);
 	cleanup_pipex(&pipex);
-	return (exit_code);
+	return (WEXITSTATUS(pipex.status));
 }
+
+// ./pipex infile "ls -l" "wc -l" outfile
+// ./pipex infile "grep a1" "wc -w" outfile
+// ./pipex nonexistentfile "ls" "wc -l" outfile
+// ./pipex infile "nonexistentcmd" "wc -l" outfile
+// ./pipex infile "ls" "wc -l" /root/outfile
+
+// # 1. Normal operation: ls | wc
+// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "ls -l" "wc -l" outfile
+// # 2. Normal operation: grep | wc
+// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "grep a1" "wc -w" outfile
+// # 3. Nonexistent input file
+// valgrind --leak-check=full --show-leak-kinds=all ./pipex nonexistentfile "ls" "wc -l" outfile
+// # 4. Invalid command
+// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "nonexistentcmd" "wc -l" outfile
+// # 5. Permission denied output file
+// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "ls" "wc -l" /root/outfile
+

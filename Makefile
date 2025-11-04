@@ -6,7 +6,7 @@
 #    By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/11 16:28:57 by wilisson          #+#    #+#              #
-#    Updated: 2025/11/02 13:47:33 by wilisson         ###   ########.fr        #
+#    Updated: 2025/11/04 19:24:50 by wilisson         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,8 @@ NAME = pipex
 SRCS = 	pipex.c \
 		src/utils.c \
 		src/path.c \
-		src/error.c
+		src/error.c \
+		src/utils2.c
 		
 OBJS = $(SRCS:.c=.o)
 
