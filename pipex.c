@@ -6,7 +6,7 @@
 /*   By: wilisson <wilisson@student.42heilbronn.de> +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/11 16:12:10 by wilisson          #+#    #+#             */
-/*   Updated: 2025/11/04 19:28:38 by wilisson         ###   ########.fr       */
+/*   Updated: 2025/11/05 14:55:37 by wilisson         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,20 +103,19 @@ int	main(int ac, char **av, char **envp)
 	return (WEXITSTATUS(pipex.status));
 }
 
+// valgrind --leak-check=full --show-leak-kinds=all 
 // ./pipex infile "ls -l" "wc -l" outfile
 // ./pipex infile "grep a1" "wc -w" outfile
 // ./pipex nonexistentfile "ls" "wc -l" outfile
 // ./pipex infile "nonexistentcmd" "wc -l" outfile
 // ./pipex infile "ls" "wc -l" /root/outfile
-
 // # 1. Normal operation: ls | wc
-// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "ls -l" "wc -l" outfile
+//./pipex infile "ls -l" "wc -l" outfile
 // # 2. Normal operation: grep | wc
-// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "grep a1" "wc -w" outfile
+//./pipex infile "grep a1" "wc -w" outfile
 // # 3. Nonexistent input file
-// valgrind --leak-check=full --show-leak-kinds=all ./pipex nonexistentfile "ls" "wc -l" outfile
+//./pipex nonexistentfile "ls" "wc -l" outfile
 // # 4. Invalid command
-// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "nonexistentcmd" "wc -l" outfile
+// ./pipex infile "nonexistentcmd" "wc -l" outfile
 // # 5. Permission denied output file
-// valgrind --leak-check=full --show-leak-kinds=all ./pipex infile "ls" "wc -l" /root/outfile
-
+// ./pipex infile "ls" "wc -l" /root/outfile
